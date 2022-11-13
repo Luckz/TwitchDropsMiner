@@ -33,7 +33,9 @@ if __name__ == "__main__":
     try:
         import win32gui  # noqa
     except ModuleNotFoundError as exc:
-        raise ImportError("You have to run 'pip install pywin32' first") from exc
+        if sys.platform == "win32":
+            raise ImportError("You have to run 'pip install pywin32' first") from exc
+        # ignore for linux
 
     from translate import _
     from twitch import Twitch
@@ -137,14 +139,15 @@ if __name__ == "__main__":
     root.destroy()
 
     # check if we're not already running
-    try:
-        exists = win32gui.FindWindow(None, WINDOW_TITLE)
-    except AttributeError:
-        # we're not on Windows - continue
-        exists = False
-    if exists and not settings.no_run_check:
-        # already running - exit
-        sys.exit(3)
+    if sys.platform == "win32":
+        try:
+            exists = win32gui.FindWindow(None, WINDOW_TITLE)
+        except AttributeError:
+            # we're not on Windows - continue
+            exists = False
+        if exists and not settings.no_run_check:
+            # already running - exit
+            sys.exit(3)
 
     # set language
     try:

@@ -10,12 +10,14 @@ import webbrowser
 import tkinter as tk
 from collections import abc
 from math import log10, ceil
-from subprocess import CREATE_NO_WINDOW
 from tkinter.font import Font, nametofont
 from functools import partial, cached_property
 from datetime import datetime, timedelta, timezone
 from tkinter import Tk, ttk, StringVar, DoubleVar, IntVar, PhotoImage
 from typing import Any, Union, Tuple, TypedDict, NoReturn, Generic, TYPE_CHECKING
+
+if sys.platform == "win32":
+    from subprocess import CREATE_NO_WINDOW
 
 import pystray
 import win32api
@@ -497,14 +499,16 @@ class LoginForm:
                     options.add_argument(f"--proxy-server={self._manager._twitch.settings.proxy}")
                 options.set_capability("pageLoadStrategy", "eager")
                 try:
+                    kwargs = {}
+                    if sys.platform == "win32":
+                        kwargs["service_creationflags"] = CREATE_NO_WINDOW
                     driver_coro = loop.run_in_executor(
                         None,
                         lambda: Chrome(
                             options=options,
                             suppress_welcome=True,
                             version_main=version_main,
-                            service_creationflags=CREATE_NO_WINDOW,
-                            # user_data_dir=str(CACHE_PATH.joinpath("ChromeProfile")),
+                            **kwargs,
                         )
                     )
                     driver = await self._manager.coro_unless_closed(driver_coro)
