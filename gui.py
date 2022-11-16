@@ -20,9 +20,6 @@ if sys.platform == "win32":
     from subprocess import CREATE_NO_WINDOW
 
 import pystray
-import win32api
-import win32con
-import win32gui
 from yarl import URL
 from PIL import Image as Image_module
 try:
@@ -34,6 +31,11 @@ except ImportError as exc:
         "You need to install Visual C++ Redist (x86 and x64): "
         "https://support.microsoft.com/en-gb/help/2977003/the-latest-supported-visual-c-downloads"
     ) from exc
+
+if sys.platform == "win32":
+    import win32api
+    import win32con
+    import win32gui
 
 from translate import _
 from cache import ImageCache
