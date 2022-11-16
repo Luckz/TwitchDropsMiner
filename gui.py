@@ -40,7 +40,6 @@ if sys.platform == "win32":
 from translate import _
 from cache import ImageCache
 from utils import resource_path, Game, _T
-from registry import RegistryKey, ValueType
 from exceptions import MinerException, ExitRequest, LoginException
 from constants import (
     CLIENT_ID,
@@ -52,6 +51,8 @@ from constants import (
     WINDOW_TITLE,
     State,
 )
+if sys.platform == "win32":
+    from registry import RegistryKey, ValueType
 
 if TYPE_CHECKING:
     from twitch import Twitch
@@ -1597,16 +1598,17 @@ class SettingsPanel:
         tray = bool(self._vars["tray"].get())
         self._settings.autostart = enabled
         self._settings.autostart_tray = tray
-        if enabled:
-            # NOTE: we need double quotes in case the path contains spaces
-            self_path = f'"{SELF_PATH.resolve()!s}"'
-            if tray:
-                self_path += " --tray"
-            with RegistryKey(self.AUTOSTART_KEY) as key:
-                key.set(self.AUTOSTART_NAME, ValueType.REG_SZ, self_path)
-        else:
-            with RegistryKey(self.AUTOSTART_KEY) as key:
-                key.delete(self.AUTOSTART_NAME, silent=True)
+        if sys.platform == "win32":
+            if enabled:
+                # NOTE: we need double quotes in case the path contains spaces
+                self_path = f'"{SELF_PATH.resolve()!s}"'
+                if tray:
+                    self_path += " --tray"
+                with RegistryKey(self.AUTOSTART_KEY) as key:
+                    key.set(self.AUTOSTART_NAME, ValueType.REG_SZ, self_path)
+            else:
+                with RegistryKey(self.AUTOSTART_KEY) as key:
+                    key.delete(self.AUTOSTART_NAME, silent=True)
 
     def set_games(self, games: abc.Iterable[Game]) -> None:
         games_list = sorted(map(str, games))
